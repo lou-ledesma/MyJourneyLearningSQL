@@ -12,14 +12,14 @@ CREATE TABLE reviewers(
 CREATE TABLE series (
 	id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	title VARCHAR(500),
-	released_year INT,
+	released_year YEAR(4),
 	genre VARCHAR(255)
 );
 
 
 CREATE TABLE reviews(
 	id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	rating INT NOT NULL,
+	rating DECIMAL(2,1),
 	series_id INT NOT NULL,
 	reviewer_id INT NOT NULL,
 	FOREIGN KEY (reviewer_id) REFERENCES reviewers(id)
@@ -67,3 +67,76 @@ INSERT INTO series (title, released_year, genre) VALUES
     (10,5,9.9),
     (13,3,8.0),(13,4,7.2),
     (14,2,8.5),(14,3,8.9),(14,4,8.9);
+
+-- Challenge 1: Retrieve all movie titles and each rating associated with the movie.
+SELECT 
+	s.title, 
+	r.rating 
+FROM series s 
+JOIN reviews r
+ON s.id = r.series_id;
+
+-- Challenge 2: Retrieve all movie titles and their average rating, and then order each movie according to average rating in ascending order.
+SELECT 
+	s.title, 
+	AVG(r.rating) as avg_rating
+FROM series s
+JOIN reviews r
+ON s.id = r.series_id
+GROUP BY s.id
+ORDER BY 2 ASC;
+
+-- Challenge 3: Retrieve the first name and last name of each reviewers and their ratings stored in the database.
+SELECT
+	a.first_name,
+	a.last_name,
+	b.rating
+FROM reviewers a 
+JOIN reviews b
+ON a.id = b.reviewer_id;
+
+-- Challenge 4: Retrieve series titles with no reviews. Name the column "unreviewed_series." 
+SELECT
+	title as unreviewed_series
+FROM series s
+LEFT JOIN reviews r
+ON s.id = r.series_id
+WHERE rating IS NULL;
+
+-- Challenge 5: Retrieve genre and average rating rounded to 2 places.
+SELECT
+	s.genre,
+	ROUND(AVG(r.rating), 2) as avg_rating
+FROM series s
+JOIN reviews r 
+ON s.id = r.series_id
+GROUP BY 1;
+
+-- Challenge 6: CREATE A REPORT!! Retrieve all of the reviewers name and the following: # of reviews, lowest rating, highest rating, average rating, and a status denoting "active" if the reviewer has ratings in the database or "inactive" if there are no ratings in the database.
+SELECT
+	a.first_name,
+	a.last_name,
+	COUNT(b.rating) AS 'COUNT',
+	IFNULL(MIN(b.rating), 0) AS 'MIN',
+	IFNULL (MAX(b.rating), 0) AS 'MAX',
+	IFNULL(AVG(b.rating), 0) AS 'AVG',
+	CASE
+		WHEN b.rating IS NOT NULL THEN 'ACTIVE'
+		ELSE 'INACTIVE'
+	END as 'STATUS'
+FROM reviewers a
+LEFT JOIN reviews b
+ON a.id = b.reviewer_id
+GROUP BY a.id;
+
+-- Challenge 7: Retrieve the series title and each rating that series got along with the reviewer.
+SELECT 
+	s.title, 
+	r.rating,
+	CONCAT (z.first_name, ' ', z.last_name) AS reviewer
+FROM series s 
+JOIN reviews r
+	ON s.id = r.series_id
+JOIN reviewers z
+	ON z.id = r.reviewer_id
+ORDER BY 1;

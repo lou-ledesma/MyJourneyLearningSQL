@@ -1,4 +1,4 @@
-# MyJourneyLearningSQL
+# SQL Personal Projects
 
 1.) This is a compilation of my code from my journey in practicing SQL.
   
